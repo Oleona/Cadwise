@@ -52,10 +52,10 @@ namespace TestForCadwise
                         sb.Append(world);
                         sb.Append(' ');
                     }
-                    else if(world.Length == lengthThreshold)
+                    else if (world.Length == lengthThreshold)
                     {
-                        if (!delimetrs.Contains(world[world.Length-1]))
-                        {  
+                        if (!delimetrs.Contains(world[world.Length - 1]))
+                        {
                             sb.Append(world);
                             sb.Append(' ');
                         }
@@ -74,18 +74,20 @@ namespace TestForCadwise
             }
             Console.WriteLine(sb);
 
+            File.WriteAllText(outputFile.FullName, sb.ToString());
+
+
             string Clean(string world)
             {
                 for (int i = 0; i < world.Length; i++)
                 {
-                    
-                        if (delimetrs.Contains(world[i]))
-                        {
-                            world = world.Replace(world[i].ToString(), "");
-                            //world = world.Substring(0, world.Length - 1);
-                            return world;
-                        }
-                   
+
+                    if (delimetrs.Contains(world[i]))
+                    {
+                        world = world.Replace(world[i].ToString(), "");
+                        return world;
+                    }
+
 
                 }
                 return world;

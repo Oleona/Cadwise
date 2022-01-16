@@ -10,16 +10,23 @@ namespace TestForCadwise
             //Console.WriteLine("Задайте полный путь к входному файлу");
             //string inputPath = Console.ReadLine();
             var inputFile = new FileInfo("d:\\sobes\\Cadwise\\input\\InputTest.txt");
-            if (!inputFile.Exists)
-            {
-                //....
-                return;
-            }
+            
 
+
+            //tще не проверяла
+            while (true)
+            {
+                if (!inputFile.Exists)
+                {
+                    Console.WriteLine("Вы задали неправильный путь. Попробуйте снова");
+                    string inputPath = Console.ReadLine();
+                }
+                else break;
+            }
 
             //Console.WriteLine("Задайте полный путь к месту хранения результирующего файла");
             //string outputPath = Console.ReadLine();@"d:\sobes\Cadwise\output\OutputTest.txt"
-            var outputFile = new FileInfo(inputFile.Directory.FullName + "Output.txt");
+            var outputFile = new FileInfo(inputFile.Directory.FullName + "\\Output.txt");
 
 
             //Console.WriteLine("Введите количество символов для удаления слов меньшей длины");
@@ -33,8 +40,8 @@ namespace TestForCadwise
             //}
 
             int lengthThreshold = 5;
-           //bool needDeletePunctuation = true;
-            bool needDeletePunctuation = false;
+            bool needDeletePunctuation = true;
+            //bool needDeletePunctuation = false;
 
             //Console.WriteLine("Введите y если удаляем знаки препинания или n, если не удаляем");
             //string punctuationMark = Console.ReadLine();
@@ -61,8 +68,11 @@ namespace TestForCadwise
             //    }
             //}
 
-            var textParser = new TextParser();
-            textParser.Parse(inputFile, outputFile, lengthThreshold, needDeletePunctuation);
+            //var textParser = new TextParser();
+            //textParser.Parse(inputFile, outputFile, lengthThreshold, needDeletePunctuation);
+
+            var testParserAsync = new TestParserAsync();
+            testParserAsync.Parse(inputFile, outputFile, lengthThreshold, needDeletePunctuation);
 
             Console.ReadKey();
 
