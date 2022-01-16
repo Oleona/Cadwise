@@ -18,7 +18,6 @@ namespace TestForCadwise
             public int i;
             public char[] chars;
 
-
             public Chunk(int i, char[] chars)
             {
                 this.i = i;
@@ -35,41 +34,26 @@ namespace TestForCadwise
             /* int startPosition = 0;//это позиция в буфере а нужна позиция в файле
              for (int i = 0; i < BlockCount; i++)
              {
-
-                 ////Если я считываю массив символов надо ли мне учитывать границы слов? Вообще нужно иначе я потом могу удалить часть слова
-                 ////посчитав его целым словом короче порога
                  StreamReader sr = new StreamReader(inputFile.FullName);
                  //sr.BaseStream.Position = startPosition;
                  //char[] chars = new char[BlockSize];
-                 // sr.ReadBlock(chars, 0, BlockSize); //из sr будет прочитано BlockSize символа  с символа с индексом 0
+                 // sr.ReadBlock(chars, 0, BlockSize); //из sr будет прочитано BlockSize символов
                  ////sr.Read(chars, 0, BlockSize);
                  //Chunk chunk = new(i, chars);
                  //chunkList.Add(chunk);
-                 //Console.Write(chars);
-                 //Console.WriteLine("test");
-                 //Console.WriteLine("test");
-                 //Console.WriteLine("test");
                  //startPosition += BlockSize;
-
-                 int line = 10;
-                 //можно попробовать обманку считывать строками до примерного размера
-                 //На странице 40  строк, в каждой по 60 байт.
-                 //Поэтому объём одной страницы текста 60 x 40 = 2400 байт
-                 //один блок из 40 строк сейчас повторяет 4 раза, надо как то продолжить чтение опять с позиции
-                 var sb = new StringBuilder();
-
-                 for (int j = 0; j < line; j++)
-                 {
-                     sb.Append(sr.ReadLine());
-                 }
-                 Console.WriteLine(sb.ToString());
-                 
              }*/
-            var text = SplitFileChar(inputFile, BlockSize);
-            foreach (var t in text)
+
+            //var text = SplitFileChar(inputFile, BlockSize);
+            var text = SplitFileListString(inputFile, BlockSize);
+
+            for (int i = 0;i< text.Count; i++)
             {
-                string str = new string(t);
-                Console.Write(str);
+                for (int j = 0; j < text[i].Count; j++)
+                {
+                    Console.WriteLine(text[i][j]);
+                }
+
             }
 
             Console.Write("test");
@@ -89,7 +73,8 @@ namespace TestForCadwise
             {
                 while (totalRead < fileLen)
                 {
-                    var part = new char[fileLen - totalRead < BlockSize ? fileLen - totalRead : BlockSize];
+
+                    var part = new char[BlockSize];
                     var a = sr.Read(part, 0, part.Length);
                     if (a == 0)
                     {
@@ -99,6 +84,50 @@ namespace TestForCadwise
                     totalRead += BlockSize;
 
                     result.Add(part);
+                }
+            }
+
+            return result;
+        }
+
+
+        List<List<string>> SplitFileListString(FileInfo inputFile, int BlockSize)
+        {
+            //var result = new List<char[]>();
+            List<List<string>> result = new List<List<string>>();
+
+            var fileLen = new FileInfo(inputFile.FullName).Length;
+
+            var totalRead = 0;
+            using (var sr = new StreamReader(inputFile.FullName))
+            {
+                while (totalRead < fileLen)
+
+                {
+                    var part = new List<string>();
+                    //var a = sr.Read(part, 0, part.Length);
+
+                    for (int i = 0; i < 10; i++)
+
+                    {
+                        string temp = sr.ReadLine();
+                        if (String.IsNullOrEmpty(temp))
+                        {
+                            //Пытаюсь сделать чтобы в каждую секцию писалось 10 строк но тогда в конце уходим в вечный цикл так как I все время
+                            //вычитается. wile никак так как в последнем блоке не 10 строк а меньше
+                            // i--;
+                            // breac  не пойдет так как в тексте есть пустые строки
+                            continue;
+                        }
+                        part.Add(temp);
+                    }
+
+                    totalRead += BlockSize;
+
+                    if (part.Count != 0)
+                    {
+                        result.Add(part);
+                    }
                 }
             }
 
