@@ -80,26 +80,65 @@ namespace TestForCadwise
             //var reader = new TestReader();
             //reader.Read(inputFile, outputFile, lengthThreshold, needDeletePunctuation);
 
+            var chunkParser = new ChunkParser();
+
+            List<Chunk> result = new List<Chunk>();
+
+
             int current_part = 0;
-            var reader = new yieldReader();
+
+            //var reader = new yieldReader();
             foreach (LinkedList<string> LinesPart in yieldReader.AllLinesFromFile(inputFile.FullName))
             {
-                /* В теле цикла мы можем обрабатывать текущую порцию строк */
+                Chunk chunk = new Chunk();
+                chunk.chunkNumber = current_part;
+                chunk.LinesPart = LinesPart;
+
+               // var chunk = new Chunk(current_part, LinesPart);
+               // var newChank = (Chunk)chunk.Clone();
 
                 Console.WriteLine("Current part: " + current_part);
-                Console.WriteLine("Count of lines: " + LinesPart.Count);
                 Console.WriteLine("");
-                //foreach(string s in LinesPart)
-                //{
-                //    Console.WriteLine(s);
-                //}
-                Chunk chunk = new Chunk(current_part, LinesPart);
+
+
+                //Почему в результат не добавляется чанк а предыдущий затирается и в конце 4 одинаковых чанка?
+
+                
+                result.Add(chunk);
+                List<Chunk> results = new List<Chunk>(result);
+                results.Add(chunk);
+
+                if (result.Count % 4 == 0)
+                {
+                    foreach (Chunk c in result)
+                    {
+                        Console.WriteLine("chanc number: " + c.chunkNumber.ToString());
+                        chunkParser.ChunkParse(c, lengthThreshold, needDeletePunctuation);
+                    }
+                    var tasks = new List<Task<Chunk>>();
+                    //можно foreach если достаточно что у chunk внутри есть номер
+                    for (int i = 0; i < result.Count; i++)
+                    {
+                      //  var task = Task<Chunk>.Run(chunkParser.ChunkParse(result[i], lengthThreshold, needDeletePunctuation));
+                       // tasks.Add(task);
+                    };
+                    result.Clear();
+                }
+
                 current_part++;
+
+
+
             }
 
 
+            Console.WriteLine("вышли из цикла, обработаем остаток записей не в цикле");
+            //foreach (Chunk c in result)
+            //{
+            //    Console.WriteLine("chanc number: " + c.chunkNumber.ToString());
+            //}
 
-            //var testParserAsync = new TestParserAsync();
+            // var testParserAsync = new TetParserAsync();
 
             //List<Chunk> chunks = reader.Parse(inputFile, outputFile, lengthThreshold, needDeletePunctuation);
             //var chunks = new List<Chunk> { reader.Read() 4 раза}

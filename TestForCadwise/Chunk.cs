@@ -1,13 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace TestForCadwise
 {
-    public struct Chunk
+    public struct Chunk : ICloneable
     {
         public int chunkNumber;
         public List<string> textFragments;
         public char[] charFragments;
         public LinkedList<string> LinesPart;
+        public string text;
 
         public Chunk(int chunkNumber, char[] charFragments)
         {
@@ -15,6 +17,7 @@ namespace TestForCadwise
             this.charFragments = charFragments;
             this.textFragments = null;
             this.LinesPart = null;
+            this.text = null;
 
         }
 
@@ -24,6 +27,7 @@ namespace TestForCadwise
             this.textFragments = textFragments;
             this.charFragments = null;
             this.LinesPart = null;
+            this.text = null;
         }
 
         public Chunk(int chunkNumber, LinkedList<string> LinesPart)
@@ -32,9 +36,22 @@ namespace TestForCadwise
             this.LinesPart = LinesPart;
             this.charFragments = null;
             this.textFragments = null;
+            this.text = null;
 
         }
 
+        public Chunk(int chunkNumber, string text)
+        {
+            this.chunkNumber = chunkNumber;
+            this.LinesPart = null;
+            this.charFragments = null;
+            this.textFragments = null;
+            this.text = text;
+
+        }
+
+        public object Clone() => new Chunk(chunkNumber, LinesPart);
+        
     }
 }
 
