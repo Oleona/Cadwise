@@ -8,7 +8,7 @@ namespace TestForCadwise
         public int chunkNumber;
         public List<string> textFragments;
         public char[] charFragments;
-        public LinkedList<string> LinesPart;
+        public LinkedList<string> Lines;
         public string text;
 
         public Chunk(int chunkNumber, char[] charFragments)
@@ -16,7 +16,7 @@ namespace TestForCadwise
             this.chunkNumber = chunkNumber;
             this.charFragments = charFragments;
             this.textFragments = null;
-            this.LinesPart = null;
+            this.Lines = null;
             this.text = null;
 
         }
@@ -26,14 +26,14 @@ namespace TestForCadwise
             this.chunkNumber = chunkNumber;
             this.textFragments = textFragments;
             this.charFragments = null;
-            this.LinesPart = null;
+            this.Lines = null;
             this.text = null;
         }
 
         public Chunk(int chunkNumber, LinkedList<string> LinesPart)
         {
             this.chunkNumber = chunkNumber;
-            this.LinesPart = LinesPart;
+            this.Lines = LinesPart;
             this.charFragments = null;
             this.textFragments = null;
             this.text = null;
@@ -43,14 +43,14 @@ namespace TestForCadwise
         public Chunk(int chunkNumber, string text)
         {
             this.chunkNumber = chunkNumber;
-            this.LinesPart = null;
+            this.Lines = null;
             this.charFragments = null;
             this.textFragments = null;
             this.text = text;
 
         }
 
-        public object Clone() => new Chunk(chunkNumber, LinesPart);
+        public object Clone() => new Chunk(chunkNumber, Lines);
         
     }
 }

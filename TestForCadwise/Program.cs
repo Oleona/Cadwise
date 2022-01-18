@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 //Подчеркивал не давал вызвать парсер если ставила List<Chunk>chunks пришлось добавить последний странный юзинг
@@ -88,41 +89,54 @@ namespace TestForCadwise
             int current_part = 0;
 
             //var reader = new yieldReader();
-            foreach (LinkedList<string> LinesPart in yieldReader.AllLinesFromFile(inputFile.FullName))
+            //foreach (LinkedList<string> LinesPart in yieldReader.AllLinesFromFile(inputFile.FullName))
+
+            var reader = new ChunkReader();
+            foreach (Chunk LinesPart in reader.ReadLinesFromFile(inputFile.FullName, chunkSize:10))
             {
-                Chunk chunk = new Chunk();
+                Chunk chunk = new Chunk(LinesPart.chunkNumber, LinesPart.Lines);
+
+                /*Chunk chunk = new Chunk();
                 chunk.chunkNumber = current_part;
-                chunk.LinesPart = LinesPart;
+                chunk.LinesPart = new LinkedList<string>(LinesPart);*/
 
-               // var chunk = new Chunk(current_part, LinesPart);
-               // var newChank = (Chunk)chunk.Clone();
+                //Console.WriteLine("Current part: " + current_part);
+                //Console.WriteLine("");
 
-                Console.WriteLine("Current part: " + current_part);
-                Console.WriteLine("");
-
-
-                //Почему в результат не добавляется чанк а предыдущий затирается и в конце 4 одинаковых чанка?
-
-                
-                result.Add(chunk);
-                List<Chunk> results = new List<Chunk>(result);
-                results.Add(chunk);
+                //result.Add(chunk);
+                result.Add(LinesPart);
 
                 if (result.Count % 4 == 0)
                 {
-                    foreach (Chunk c in result)
-                    {
-                        Console.WriteLine("chanc number: " + c.chunkNumber.ToString());
-                        chunkParser.ChunkParse(c, lengthThreshold, needDeletePunctuation);
-                    }
+
                     var tasks = new List<Task<Chunk>>();
-                    //можно foreach если достаточно что у chunk внутри есть номер
+
                     for (int i = 0; i < result.Count; i++)
                     {
-                      //  var task = Task<Chunk>.Run(chunkParser.ChunkParse(result[i], lengthThreshold, needDeletePunctuation));
-                       // tasks.Add(task);
+                        var task = Task<Chunk>.Run(() => chunkParser.ProcessChunk(result[i], lengthThreshold, needDeletePunctuation));
+                        tasks.Add(task);
+
                     };
+
+                    var continuation = Task.WhenAll(tasks);
+                    try
+                    {
+                        continuation.Wait();
+                    }
+                    catch (AggregateException)
+                    { }
+                    if (continuation.Status == TaskStatus.RanToCompletion)
+                    {
+                        var sortedChunks = continuation.Result.OrderBy(c => c.chunkNumber).ToList();
+                        foreach (var chunks in sortedChunks)
+                        {
+                            File.AppendAllText(outputFile.FullName, chunks.text);
+                        }
+
+                    }
                     result.Clear();
+                    tasks.Clear();
+
                 }
 
                 current_part++;
@@ -131,29 +145,35 @@ namespace TestForCadwise
 
             }
 
-
+            //Еще не доделано- нужно 2 таски на 8 и 9 кусок
             Console.WriteLine("вышли из цикла, обработаем остаток записей не в цикле");
-            //foreach (Chunk c in result)
-            //{
-            //    Console.WriteLine("chanc number: " + c.chunkNumber.ToString());
-            //}
+            var tasks1 = new List<Task<Chunk>>();
 
-            // var testParserAsync = new TetParserAsync();
+            for (int i = 0; i < result.Count; i++)
+            {
+                var task = Task<Chunk>.Run(() => chunkParser.ProcessChunk(result[i], lengthThreshold, needDeletePunctuation));
+                tasks1.Add(task);
 
-            //List<Chunk> chunks = reader.Parse(inputFile, outputFile, lengthThreshold, needDeletePunctuation);
-            //var chunks = new List<Chunk> { reader.Read() 4 раза}
+            };
 
-            //var tasks = new List<Task<Chunk>>();
-            //for (int i = 0; i < chunks.Count; i++)
-            //{
-            //    var task = Task<Chunk>.Run(parse(chunks[i]));
-            //    });
+            var continuation1 = Task.WhenAll(tasks1);
+            try
+            {
+                continuation1.Wait();
+            }
+            catch (AggregateException)
+            { }
+            if (continuation1.Status == TaskStatus.RanToCompletion)
+            {
+                var sortedChunks = continuation1.Result.OrderBy(c => c.chunkNumber).ToList();
+                foreach (var chunks in sortedChunks)
+                {
+                    File.AppendAllText(outputFile.FullName, chunks.text);
+                }
 
-            //    tasks.Add(task);
-
-            //}
-
-
+            }
+            result.Clear();
+            tasks1.Clear();
 
 
             Console.ReadKey();

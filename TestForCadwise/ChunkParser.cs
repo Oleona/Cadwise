@@ -1,29 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace TestForCadwise
 {
     public class ChunkParser
     {
         private const string delimetrs = ".,;:«»—!?-\"()";
-        public Chunk ChunkParse(Chunk chunk, int lengthThreshold, bool needDeletePunctuation)
+        public Chunk ProcessChunk(Chunk chunk, int lengthThreshold, bool needDeletePunctuation)
         {
-            
-            var result = string.Join(" ", chunk.LinesPart);
+            var processedLines = new List<string>(chunk.Lines.Count);
+            foreach (var line in chunk.Lines)
+            {
+                var wordArray = line.Split(' ');
+                var processedLine = ProcessWordArray(wordArray, lengthThreshold, needDeletePunctuation);
+                processedLines.Add(processedLine);
+                processedLines.Add("\n");
+            }
+
+            return new Chunk(chunk.chunkNumber, processedLines);
+            /*var result = string.Join(" ", chunk.Lines);
             var worldArray = result.Split(' ');
             var text = ProcessWordArray(worldArray, lengthThreshold, needDeletePunctuation);
             var newChunk = new Chunk(chunk.chunkNumber, text);
-            return newChunk;
-
-
-
-
-            Console.WriteLine("Взяли порцию");
-
-
+            return newChunk;*/
         }
 
         private string ProcessWordArray(string[] wordArray, int lengthThreshold, bool needDeletePunctuation)
@@ -32,11 +31,13 @@ namespace TestForCadwise
             foreach (var word in wordArray)
             {
                 var cleanedWord = needDeletePunctuation ? RemovePunctuation(word) : word;
-                if (cleanedWord.Length > lengthThreshold)
+                if (cleanedWord.Length <= lengthThreshold)
                 {
-                    sb.Append(cleanedWord);
-                    sb.Append(' ');
+                    continue;
                 }
+
+                sb.Append(cleanedWord);
+                sb.Append(' ');
             }
 
             return sb.ToString();
@@ -49,6 +50,7 @@ namespace TestForCadwise
                 if (delimetrs.Contains(word[i]))
                 {
                     word = word.Replace(word[i].ToString(), "");
+                    i--;
                 }
             }
 
