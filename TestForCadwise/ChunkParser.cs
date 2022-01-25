@@ -1,12 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace TestForCadwise
 {
     public class ChunkParser
     {
         private readonly Chunk chunk;
-        private const string delimetrs = ".,;:«»—!?-\"()";
+        //private const string delimetrs = ".,;:«»—!?-\"()";
+        private readonly char[] delimeters 
+            = new char[] { '.', ',', ';', ':', '«', '»' , '—', '!' , '?', '-', '\"', '(', ')', '…' };
 
         public ChunkParser(Chunk chunk)
         {
@@ -21,6 +24,8 @@ namespace TestForCadwise
                 var words = line.Split(' ');
                 var processedLine = ProcessWords(words, lengthThreshold, needDeletePunctuation);
                 processedLines.Add(processedLine);
+                /*var processedLine = Regex.Replace(line, $"\b[а-яА-Я]{{1,{lengthThreshold}}}\b", string.Empty);
+                processedLines.Add(processedLine);*/
             }
 
             return new Chunk(chunk.ChunkNumber, processedLines);
@@ -31,31 +36,37 @@ namespace TestForCadwise
             var sb = new StringBuilder(wordArray.Length * 10);
             foreach (var word in wordArray)
             {
-                var cleanedWord = needDeletePunctuation ? RemovePunctuation(word) : word;
-                if (cleanedWord.Length <= lengthThreshold)
-                {
-                    continue;
-                }
+                var cleanedWord = word.Trim(delimeters);
 
-                sb.Append(cleanedWord);
-                sb.Append(' ');
+                if (cleanedWord.Length > lengthThreshold)
+                {
+                    sb.Append(needDeletePunctuation ? cleanedWord : word);
+                    sb.Append(' ');
+                }
+                else
+                {
+                    if (needDeletePunctuation)
+                    {
+                        continue;
+                    }
+
+                    bool hasPunctuation = false;
+                    foreach (var delimeter in delimeters)
+                    {
+                        if (word.Contains(delimeter))
+                        {
+                            hasPunctuation = true;
+                            sb.Append(delimeter);
+                        }
+                    }
+                    if (hasPunctuation)
+                    {
+                        sb.Append(' ');
+                    }
+                }
             }
 
             return sb.ToString();
-        }
-
-        private string RemovePunctuation(string word)
-        {
-            for (int i = 0; i < word.Length; i++)
-            {
-                if (delimetrs.Contains(word[i]))
-                {
-                    word = word.Replace(word[i].ToString(), "");
-                    i--;
-                }
-            }
-
-            return word;
         }
     }
 }

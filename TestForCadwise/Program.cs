@@ -17,7 +17,7 @@ namespace TestForCadwise
 
 
             Console.WriteLine("Задайте полный путь к входному файлу, например, C:\\work\\input.txt");
-            string inputPath = Console.ReadLine();
+            string inputPath = "d:\\sobes\\Cadwise\\input\\InputTest.txt";//Console.ReadLine();
             var inputFile = new FileInfo(inputPath);
 
             while (true)
@@ -33,12 +33,12 @@ namespace TestForCadwise
             }
 
             Console.WriteLine("Задайте имя выходного файла, например, output.txt");
-            string outputFileName = Console.ReadLine();
+            string outputFileName = "output.txt";//Console.ReadLine();
             var outputFile = new FileInfo(inputFile.Directory.FullName + '\\' + outputFileName);
 
 
             Console.WriteLine("Введите количество символов для удаления слов меньшей длины");
-            string result = Console.ReadLine();
+            string result = "5";//Console.ReadLine();
             int minimalLength;
 
             while (!int.TryParse(result, out minimalLength) || minimalLength < 0)
@@ -66,8 +66,19 @@ namespace TestForCadwise
                 punctuationMark = Console.ReadLine();
             }
 
-            var textAnalyzer = new TextAnalyzer(inputFile, outputFile, minimalLength, needDeletePunctuation);
-            await textAnalyzer.Analyze();        
+            try
+            {
+                var textAnalyzer = new TextAnalyzer(inputFile, outputFile, minimalLength, needDeletePunctuation);
+                await textAnalyzer.Analyze();
+
+                Console.WriteLine(
+                    $"Обработка файла {inputFile.Name} завершена успешно. Результат записан в файл {outputFile.Name}");
+            } 
+            catch (Exception e)
+            {
+                Console.WriteLine($"Обработка файла {inputFile.Name} завершилась неудачей: {e.Message}.");
+            }
+                   
         }
     }
 }
