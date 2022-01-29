@@ -17,7 +17,7 @@ namespace TestForCadwise
 
 
             Console.WriteLine("Задайте полный путь к входному файлу, например, C:\\work\\input.txt");
-            string inputPath = "d:\\sobes\\Cadwise\\input\\InputTest.txt";//Console.ReadLine();
+            string inputPath = Console.ReadLine();
             var inputFile = new FileInfo(inputPath);
 
             while (true)
@@ -33,12 +33,12 @@ namespace TestForCadwise
             }
 
             Console.WriteLine("Задайте имя выходного файла, например, output.txt");
-            string outputFileName = "output.txt";//Console.ReadLine();
+            string outputFileName = Console.ReadLine();
             var outputFile = new FileInfo(inputFile.Directory.FullName + '\\' + outputFileName);
 
 
             Console.WriteLine("Введите количество символов для удаления слов меньшей длины");
-            string result = "5";//Console.ReadLine();
+            string result = Console.ReadLine();
             int minimalLength;
 
             while (!int.TryParse(result, out minimalLength) || minimalLength < 0)

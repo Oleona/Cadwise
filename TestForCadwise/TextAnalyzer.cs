@@ -31,7 +31,7 @@ namespace TestForCadwise
             }
 
             var currentBlock = new List<Chunk>();
-            foreach (var chunk in reader.ReadLinesFromFile(inputFile.FullName, chunkSize: 1024 * 1024))
+            foreach (var chunk in reader.ReadFromFile(inputFile.FullName))
             {
                 currentBlock.Add(chunk);
                 if (currentBlock.Count % Environment.ProcessorCount != 0)
@@ -40,6 +40,8 @@ namespace TestForCadwise
                 }
 
                 await ProcessChunksInParallel(currentBlock);
+                //очищение текущего блока, теперь ленивые вычисления действительно ленивые
+                currentBlock.Clear();
             }
 
             await ProcessChunksInParallel(currentBlock);
@@ -51,8 +53,8 @@ namespace TestForCadwise
             var tasks = new List<Task<Chunk>>();
             foreach (var chunk in currentBlock)
             {
-                var chunkParser = new ChunkParser(chunk);
-                var task = Task.Run(() => chunkParser.ProcessChunk(lengthThreshold, needDeletePunctuation));
+                var chunkParser = new ChunkParser(chunk, lengthThreshold, needDeletePunctuation);
+                var task = Task.Run(() => chunkParser.ProcessChunk());
                 
                 tasks.Add(task);
             };
@@ -62,7 +64,7 @@ namespace TestForCadwise
             
             foreach (var chunks in sortedChunks)
             {
-                File.AppendAllLines(outputFile.FullName, chunks.TextFragments);
+                File.AppendAllText(outputFile.FullName, chunks.TextFragment);
             }
         }
     }

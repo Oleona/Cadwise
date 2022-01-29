@@ -5,33 +5,42 @@ namespace TestForCadwise
 {
     public class ChunkReader
     {
-        public IEnumerable<Chunk> ReadLinesFromFile(string filePath, int chunkSize)
+        private const int WhiteSpacesInChunk = 500;
+
+        public IEnumerable<Chunk> ReadFromFile(string filePath)
         {
-            var lines = new List<string>();
             using var reader = new StreamReader(filePath);
 
-            int linesInChunk = 0;
             int chunkNumber = 0;
+            int whiteSpaceCounter = 0;
+            var chars = new List<char>();
 
             while (reader.EndOfStream != true)
             {
-                lines.Add(reader.ReadLine());
-                linesInChunk++;
+                char symbol = (char)reader.Read();
+                chars.Add(symbol);
 
-                if (linesInChunk == chunkSize)
+                if (char.IsWhiteSpace(symbol))
                 {
-                    yield return new Chunk(chunkNumber, new List<string>(lines));
+                    if (whiteSpaceCounter != WhiteSpacesInChunk)
+                    {
+                        whiteSpaceCounter++;
+                        continue;
+                    }
 
-                    linesInChunk = 0;
+                    yield return new Chunk(chunkNumber, charListToString(chars));
+
                     chunkNumber++;
-                    lines.Clear();
+                    whiteSpaceCounter = 0;
+                    chars.Clear();
                 }
             }
 
-            if (linesInChunk > 0)
-            {
-                yield return new Chunk(chunkNumber, lines);
-            }
+
+            yield return new Chunk(chunkNumber, charListToString(chars));
         }
+
+        private string charListToString(List<char> chars) => new(chars.ToArray());
+
     }
 }

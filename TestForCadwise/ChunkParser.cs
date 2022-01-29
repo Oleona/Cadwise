@@ -1,72 +1,91 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Text;
 
 namespace TestForCadwise
 {
     public class ChunkParser
     {
-        private readonly Chunk chunk;
-        //private const string delimetrs = ".,;:«»—!?-\"()";
-        private readonly char[] delimeters 
-            = new char[] { '.', ',', ';', ':', '«', '»' , '—', '!' , '?', '-', '\"', '(', ')', '…' };
+        private readonly char[] delimeters
+            = new char[] { '.', ',', ';', ':', '«', '»', '—', '!', '?', '-', '\"', '(', ')', '…' };
+        private const string lineSeparator = "\r\n";
 
-        public ChunkParser(Chunk chunk)
+        private readonly Chunk chunk;
+        private readonly int lengthThreshold;
+        private readonly bool needDeletePunctuation;
+
+        public ChunkParser(Chunk chunk, int lengthThreshold, bool needDeletePunctuation)
         {
             this.chunk = chunk;
+            this.lengthThreshold = lengthThreshold;
+            this.needDeletePunctuation = needDeletePunctuation;
         }
 
-        public Chunk ProcessChunk(int lengthThreshold, bool needDeletePunctuation)
+        public Chunk ProcessChunk()
         {
-            var processedLines = new List<string>(chunk.TextFragments.Count);
-            foreach (var line in chunk.TextFragments)
-            {
-                var words = line.Split(' ');
-                var processedLine = ProcessWords(words, lengthThreshold, needDeletePunctuation);
-                processedLines.Add(processedLine);
-                /*var processedLine = Regex.Replace(line, $"\b[а-яА-Я]{{1,{lengthThreshold}}}\b", string.Empty);
-                processedLines.Add(processedLine);*/
-            }
+            var words = chunk.TextFragment.Split(' ');
 
-            return new Chunk(chunk.ChunkNumber, processedLines);
+            var joinedWordsAfterProcessing = ProcessWords(words);
+            return new Chunk(chunk.ChunkNumber, joinedWordsAfterProcessing);
         }
 
-        private string ProcessWords(string[] wordArray, int lengthThreshold, bool needDeletePunctuation)
+        private string ProcessWords(string[] wordArray)
         {
-            var sb = new StringBuilder(wordArray.Length * 10);
+            var joinedWords = new StringBuilder(wordArray.Length * 10);
+
             foreach (var word in wordArray)
             {
-                var cleanedWord = word.Trim(delimeters);
-
-                if (cleanedWord.Length > lengthThreshold)
+                if (!word.Contains(lineSeparator))
                 {
-                    sb.Append(needDeletePunctuation ? cleanedWord : word);
-                    sb.Append(' ');
+                    ProcessOneWord(joinedWords, word);
+                    continue;
                 }
-                else
+
+
+                var realWords = word.Split(lineSeparator);
+                foreach (var realWord in realWords)
                 {
-                    if (needDeletePunctuation)
+                    ProcessOneWord(joinedWords, realWord);
+
+                    if (realWord != realWords[^1])
                     {
-                        continue;
+                        joinedWords.Append(lineSeparator);
                     }
 
-                    bool hasPunctuation = false;
-                    foreach (var delimeter in delimeters)
-                    {
-                        if (word.Contains(delimeter))
-                        {
-                            hasPunctuation = true;
-                            sb.Append(delimeter);
-                        }
-                    }
-                    if (hasPunctuation)
-                    {
-                        sb.Append(' ');
-                    }
                 }
             }
 
-            return sb.ToString();
+            return joinedWords.ToString();
+        }
+
+        private void ProcessOneWord(StringBuilder joinedWords, string word)
+        {
+            var cleanedWord = word.Trim(delimeters);
+
+            if (cleanedWord.Length > lengthThreshold)
+            {
+                joinedWords.Append(needDeletePunctuation ? cleanedWord : word);
+                joinedWords.Append(' ');
+            }
+            else
+            {
+                if (needDeletePunctuation)
+                {
+                    return;
+                }
+
+                bool hasPunctuation = false;
+                foreach (var delimeter in delimeters)
+                {
+                    if (word.Contains(delimeter))
+                    {
+                        hasPunctuation = true;
+                        joinedWords.Append(delimeter);
+                    }
+                }
+                if (hasPunctuation)
+                {
+                    joinedWords.Append(' ');
+                }
+            }
         }
     }
 }
